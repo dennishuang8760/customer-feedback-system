@@ -83,6 +83,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -91,7 +92,13 @@ export default function Dashboard() {
     try {
       const [statsRes, itemsRes] = await Promise.all([
         api.get('/api/v1/feedback/stats'),
-        api.get('/api/v1/feedback', { params: { limit: 100, ...(filter ? { sentiment: filter } : {}) } }),
+        api.get('/api/v1/feedback', {
+          params: {
+            limit: 100,
+            ...(filter ? { sentiment: filter } : {}),
+            ...(categoryFilter ? { category: categoryFilter } : {}),
+          },
+        }),
       ]);
       setStats(statsRes.data);
       setItems(itemsRes.data.items);
@@ -100,7 +107,7 @@ export default function Dashboard() {
     }
   };
 
-  useEffect(() => { load(); }, [filter]);
+  useEffect(() => { load(); }, [filter, categoryFilter]);
 
   return (
     <div style={{ maxWidth: '900px', margin: '40px auto', padding: '0 24px', fontFamily: 'sans-serif' }}>
@@ -133,6 +140,17 @@ export default function Dashboard() {
           <option value="positive">Positive</option>
           <option value="neutral">Neutral</option>
           <option value="negative">Negative</option>
+        </select>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}
+        >
+          <option value="">All categories</option>
+          <option value="bug">Bug</option>
+          <option value="feature">Feature</option>
+          <option value="praise">Praise</option>
+          <option value="other">Other</option>
         </select>
         <button
           onClick={load}
