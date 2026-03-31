@@ -1,0 +1,8 @@
+name                   = "feedback-frontend"
+pages_build_output_dir = "dist"
+compatibility_date     = "2024-09-23"
+
+# VITE_API_URL is a build-time variable injected by the CI workflow
+# (vite bakes it into the bundle during `npm run build`).
+# Set it in the GitHub Actions deploy step or in the Cloudflare Pages dashboard
+# under Settings → Environment variables → Build variables.

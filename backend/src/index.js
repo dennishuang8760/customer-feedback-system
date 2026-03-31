@@ -1,14 +1,7 @@
-import express from 'express';
-import cors from 'cors';
 import { migrate } from './db.js';
-import feedbackRouter from './routes/feedback.js';
+import app from './app.js';
 
-const app = express();
 const PORT = process.env.PORT || 8000;
-
-app.use(cors({ origin: '*' }));
-app.use(express.json());
-app.use('/api/v1/feedback', feedbackRouter);
 
 migrate()
   .then(() => {
