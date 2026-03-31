@@ -1,13 +1,13 @@
-import { Router } from 'express';
+import { Hono } from 'hono';
 import { query } from '../db.js';
 import { scoreSentiment } from '../sentiment.js';
 
-const router = Router();
+const router = new Hono();
 
 // POST / — create feedback
-router.post('/', async (req, res) => {
-  const { content, author, category } = req.body;
-  if (!content) return res.status(400).json({ error: 'content is required' });
+router.post('/', async (c) => {
+  const { content, author, category } = await c.req.json();
+  if (!content) return c.json({ error: 'content is required' }, 400);
 
   const sentiment = scoreSentiment(content);
   const cat = category || 'other';
@@ -16,12 +16,16 @@ router.post('/', async (req, res) => {
     `INSERT INTO feedback (content, author, sentiment, category) VALUES ($1, $2, $3, $4) RETURNING *`,
     [content, author || null, sentiment, cat]
   );
-  res.status(201).json(result.rows[0]);
+  return c.json(result.rows[0], 201);
 });
 
 // GET / — list feedback with optional filters
-router.get('/', async (req, res) => {
-  const { sentiment, category, limit = 50, offset = 0 } = req.query;
+router.get('/', async (c) => {
+  const sentiment = c.req.query('sentiment');
+  const category = c.req.query('category');
+  const limit = c.req.query('limit') || '50';
+  const offset = c.req.query('offset') || '0';
+
   const conditions = [];
   const values = [];
   let idx = 1;
@@ -45,11 +49,11 @@ router.get('/', async (req, res) => {
     values
   );
 
-  res.json({ items: itemsResult.rows, total: parseInt(countResult.rows[0].count) });
+  return c.json({ items: itemsResult.rows, total: parseInt(countResult.rows[0].count) });
 });
 
 // GET /stats — aggregate counts
-router.get('/stats', async (req, res) => {
+router.get('/stats', async (c) => {
   const totalResult = await query('SELECT COUNT(*) FROM feedback');
   const sentimentResult = await query(
     `SELECT sentiment, COUNT(*) FROM feedback GROUP BY sentiment`
@@ -68,7 +72,7 @@ router.get('/stats', async (req, res) => {
     by_category[row.category] = parseInt(row.count);
   }
 
-  res.json({
+  return c.json({
     total: parseInt(totalResult.rows[0].count),
     by_sentiment,
     by_category,
@@ -76,10 +80,10 @@ router.get('/stats', async (req, res) => {
 });
 
 // GET /:id — single feedback item
-router.get('/:id', async (req, res) => {
-  const result = await query('SELECT * FROM feedback WHERE id = $1', [req.params.id]);
-  if (!result.rows.length) return res.status(404).json({ error: 'not found' });
-  res.json(result.rows[0]);
+router.get('/:id', async (c) => {
+  const result = await query('SELECT * FROM feedback WHERE id = $1', [c.req.param('id')]);
+  if (!result.rows.length) return c.json({ error: 'not found' }, 404);
+  return c.json(result.rows[0]);
 });
 
 export default router;
