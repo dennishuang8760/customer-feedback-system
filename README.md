@@ -38,6 +38,15 @@ A demo web application featuring a **Feedback Collector** and **Feedback Managem
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
 
+### Backend health probes
+
+The Hono API exposes:
+
+- **`GET /health`** — liveness (always `200` JSON `{ "status": "ok" }` when the process is up).
+- **`GET /ready`** — readiness (`200` when Postgres answers `SELECT 1`, else `503`).
+
+The backend [`Dockerfile`](backend/Dockerfile) includes a `HEALTHCHECK` that hits `/health` inside the container. For Kubernetes-style readiness, point your probe at `/ready` on the same port (`8000` by default).
+
 ## Deployment
 
 - **Frontend**: Cloudflare Pages

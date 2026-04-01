@@ -96,3 +96,15 @@ jobs:
       - name: Run tests
         run: npm test
         # Tests are empty for now — Full-Stack Dev will fill in
+
+  docker-build:
+    name: Docker build (backend + frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -f backend/Dockerfile -t feedback-backend:ci ./backend
+
+      - name: Build frontend image
+        run: docker build -f frontend/Dockerfile -t feedback-frontend:ci ./frontend

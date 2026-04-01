@@ -18,7 +18,7 @@ initDb((text, params) => pool.query(text, params));
 pool.query(SCHEMA)
   .then(() => {
     const port = parseInt(process.env.PORT || '8000');
-    serve({ fetch: app.fetch, port }, () => {
+    serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, () => {
       console.log(`Backend listening on port ${port}`);
     });
   })
