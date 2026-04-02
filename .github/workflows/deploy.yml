@@ -25,6 +25,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify Cloudflare API token (wrangler whoami)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler whoami
+
       - name: Set Workers secrets
         continue-on-error: true
         env:
